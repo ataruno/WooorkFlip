@@ -1,13 +1,13 @@
 <Window
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="Workspace Window"
+    Title="WooorkFlip"
     Width="800"
-    Height="580"
+    Height="700"
     MinWidth="700"
     MinHeight="500"
     WindowStartupLocation="CenterScreen"
-    Background="#F3F5F8"
+    Background="#bdd5f8"
     FontFamily="Segoe UI"
     FontSize="13">
 
@@ -103,22 +103,27 @@
                     <ControlTemplate TargetType="ListBoxItem">
                         <Border x:Name="ItemBorder"
                                 Background="{TemplateBinding Background}"
-                                CornerRadius="8"
+                                CornerRadius="20"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter/>
                         </Border>
                         <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemBorder"
+                                        Property="Background"
+                                        Value="#839bb8"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="False">
+                                <Setter TargetName="ItemBorder"
+                                        Property="Background"
+                                        Value="#dae7f7"/>
+                            </Trigger>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter TargetName="ItemBorder"
                                         Property="Background"
                                         Value="#88b4f5"/>
                                 <Setter Property="Foreground"
                                         Value="#0e2155"/>
-                            </Trigger>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ItemBorder"
-                                        Property="Background"
-                                        Value="#839bb8"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -138,27 +143,24 @@
 
         <!-- Header -->
         <Grid Grid.Row="0" Margin="0,0,0,20">
-
             <StackPanel>
-                <TextBlock Text="Workspace Window"
-                           FontSize="21"
+                <TextBlock Text="WooorkFlip"
+                           FontSize="24"
                            FontWeight="Bold"
                            Foreground="{StaticResource TextBrush}"/>
 
-                <TextBlock Text="Manage your workspace"
+                <TextBlock Text="Manage your workspace!"
                            Margin="0,3,0,0"
                            Foreground="{StaticResource MutedBrush}"
                            FontSize="12"/>
             </StackPanel>
-
         </Grid>
 
         <!-- Main content -->
         <Grid x:Name="MainLayout" Grid.Row="1">
-
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="280"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="400"/>
             </Grid.ColumnDefinitions>
 
             <!-- Workspace list -->
@@ -268,7 +270,7 @@
                              AcceptsReturn="True"
                              VerticalScrollBarVisibility="Auto"
                              VerticalContentAlignment="Top"
-                             Background="#F5F7FA"
+                             Background="#f0f9ff"
                              BorderThickness="0"
                              FontFamily="Consolas"
                              FontSize="11"
