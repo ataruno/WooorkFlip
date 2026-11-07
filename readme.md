@@ -1,6 +1,7 @@
 # WooorkFlip (GUI)
 Windows上で開いているアプリケーションのウィンドウ配置を保存し、後から復元するためのツールです。
 
+![WooorkFlip](README/readme01.jpg)
 
 ## 注意点
 * AIを活用しながら開発したアプリです。
