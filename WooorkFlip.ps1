@@ -668,6 +668,7 @@ if ($Action -in @('List', 'Save')) {
                 [ordered]@{
                     process      = $windowItem.Process
                     processPath  = $windowItem.ProcessPath
+                    handle       = $windowItem.Handle
                     launchFile   = $launchFile
                     title        = $windowItem.Title
                     class        = $windowItem.Class
@@ -802,8 +803,7 @@ if ($Action -eq 'Load') {
                 if (
                     $process.ProcessName -eq $savedWindow.process -and
                     $process.Path -ieq $processPath -and
-                    $window.ClassName -eq $savedWindow.class -and
-                    $window.Title -eq $savedWindow.title
+                    $window.ClassName -eq $savedWindow.class
                 ) {
                     $usedHandles[$handleKey] = $true
                     $matched = $true
@@ -878,8 +878,7 @@ if ($Action -eq 'Load') {
                     if (
                         $process.ProcessName -eq $savedWindow.process -and
                         $process.Path -ieq $savedWindow.processPath -and
-                        $window.ClassName -eq $savedWindow.class -and
-                        $window.Title -eq $savedWindow.title
+                        $window.ClassName -eq $savedWindow.class
                     ) {
                         $usedHandles[$handleKey] = $true
                         $found = $true
@@ -949,34 +948,63 @@ if ($Action -eq 'Load') {
     }
 
     # Restore windows
-    $results = foreach ($saved in $workspace.windows) {
+    foreach ($saved in $workspace.windows) {
 
-        # Match process, class and title
+        # Match process, path and class
         $candidates = @(
             $currentItems | Where-Object {
                 -not $_.Used -and
                 $_.Process -eq $saved.process -and
                 $_.Class -eq $saved.class -and
-                $_.Title -eq $saved.title
+                $_.ProcessPath -and
+                $_.ProcessPath -ieq $saved.processPath
             }
         )
 
-        # Prefer exact process path match
-        if ($saved.processPath) {
+        # Read saved HWND
+        $savedHandle = 0L
 
-            $pathMatches = @(
-                $candidates | Where-Object {
-                    $_.ProcessPath -and
-                    $_.ProcessPath -ieq $saved.processPath
+        if (-not [string]::IsNullOrWhiteSpace([string]$saved.handle)) {
+            try {
+                $handleText = ([string]$saved.handle).Trim()
+
+                if ($handleText.StartsWith('0x')) {
+                    $handleText = $handleText.Substring(2)
                 }
-            )
 
-            if ($pathMatches.Count -gt 0) {
-                $candidates = $pathMatches
+                $savedHandle = [Convert]::ToInt64($handleText, 16)
+            }
+            catch {
+                $savedHandle = 0L
             }
         }
 
-        if ($candidates.Count -eq 0) {
+        # Prefer exact HWND match
+        $target = $null
+
+        if ($savedHandle -ne 0) {
+            $target = $candidates |
+                Where-Object {
+                    [long]$_.Window.Handle -eq $savedHandle
+                } |
+                Select-Object -First 1
+        }
+
+        # Fallback: prefer exact title match
+        if (-not $target) {
+            $target = $candidates |
+                Where-Object {
+                    $_.Title -eq $saved.title
+                } |
+                Select-Object -First 1
+        }
+
+        # Final fallback: use an unused window
+        if (-not $target) {
+            $target = $candidates | Select-Object -First 1
+        }
+
+        if (-not $target) {
 
             [pscustomobject]@{
                 Process = $saved.process
@@ -988,8 +1016,7 @@ if ($Action -eq 'Load') {
             continue
         }
 
-        # Select one unused window
-        $target = $candidates[0]
+        # Mark window as used
         $target.Used = $true
 
         # Validate saved size
